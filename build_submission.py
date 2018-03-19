@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 # Load model
-model = load_model("model.h5")
+model = load_model("model_batch.h5")
 
 # Load test data
 test = np.load("test_data/test_data.npy") / 255.

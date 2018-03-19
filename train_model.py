@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from keras import layers
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.preprocessing.image import ImageDataGenerator
 from keras import optimizers
@@ -36,18 +36,20 @@ if __name__ == "__main__":
 
     # Use cpu, gpu out of memory
     model = Sequential()
-    model.add(Conv2D(filters=8, kernel_size=2, padding='same', activation='relu',
-                     input_shape=(28, 28, 1)))
-    model.add(MaxPooling2D(pool_size=2))
-    model.add(Conv2D(filters=16, kernel_size=2, padding='same', activation='relu'))
-    model.add(MaxPooling2D(pool_size=2))
-    model.add(Conv2D(filters=32, kernel_size=2, padding='same', activation='relu'))
-    model.add(MaxPooling2D(pool_size=2))
-    # model.add(Dropout(0.3))
-    model.add(Flatten())
-    model.add(Dense(500, activation='relu'))
-    # model.add(Dropout(0.4))
-    model.add(Dense(10, activation='softmax'))
+    model.add(layers.Conv2D(filters=8, kernel_size=2, padding='same', activation='relu',
+                            input_shape=(28, 28, 1)))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D(pool_size=2))
+    model.add(layers.Conv2D(filters=16, kernel_size=2, padding='same', activation='relu'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D(pool_size=2))
+    model.add(layers.Conv2D(filters=32, kernel_size=2, padding='same', activation='relu'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D(pool_size=2))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(500, activation='relu'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dense(10, activation='softmax'))
 
     model.summary()
 
@@ -75,4 +77,4 @@ if __name__ == "__main__":
     score = model.evaluate(x_test, y_test, verbose=0)
     print('\n', 'Test accuracy:', score[1])
 
-    model.save("model.h5")
+    model.save("model_batch.h5")
