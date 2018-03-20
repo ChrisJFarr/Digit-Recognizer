@@ -46,6 +46,9 @@ if __name__ == "__main__":
     model.add(layers.Conv2D(filters=32, kernel_size=2, padding='same', activation='relu'))
     model.add(layers.BatchNormalization())
     model.add(layers.MaxPooling2D(pool_size=2))
+    model.add(layers.Conv2D(filters=64, kernel_size=2, padding='same', activation='relu'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D(pool_size=2))
     model.add(layers.Flatten())
     model.add(layers.Dense(500, activation='relu'))
     model.add(layers.BatchNormalization())
@@ -59,13 +62,17 @@ if __name__ == "__main__":
     # Check pointer for storing best model
     checkpointer = ModelCheckpoint(filepath='model.weights.best.hdf5', verbose=1,
                                    save_best_only=True)
-    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='auto')
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=3, verbose=1, mode='auto')
 
+    # keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=0, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0)'
+    # keras.callbacks.RemoteMonitor(root='http://localhost:9000', path='/publish/epoch/end/', field='data', headers=None)
+    # https://iwatobipen.wordpress.com/2016/11/23/remotemonitor-in-keras/
+    # TODO add reduce LR on plateau. stopped at iter 14. as is or remove filter=64 layer since it didn't improve
     history = model.fit_generator(
         train_generator,
-        epochs=5,
+        epochs=25,
         validation_data=validation_generator,
-        steps_per_epoch=(len(x_train) // train_batchsize) * 2,
+        steps_per_epoch=len(x_train) // train_batchsize,
         validation_steps=len(x_valid) // valid_batchsize,
         callbacks=[checkpointer, early_stopping],
         verbose=1)
