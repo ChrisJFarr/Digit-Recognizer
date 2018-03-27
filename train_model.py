@@ -1,7 +1,7 @@
 import numpy as np
 from keras.models import Sequential
 from keras import layers
-from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.preprocessing.image import ImageDataGenerator
 from keras import optimizers
 
@@ -46,11 +46,8 @@ if __name__ == "__main__":
     model.add(layers.Conv2D(filters=32, kernel_size=2, padding='same', activation='relu'))
     model.add(layers.BatchNormalization())
     model.add(layers.MaxPooling2D(pool_size=2))
-    model.add(layers.Conv2D(filters=64, kernel_size=2, padding='same', activation='relu'))
-    model.add(layers.BatchNormalization())
-    model.add(layers.MaxPooling2D(pool_size=2))
     model.add(layers.Flatten())
-    model.add(layers.Dense(500, activation='relu'))
+    model.add(layers.Dense(1000, activation='relu'))
     model.add(layers.BatchNormalization())
     model.add(layers.Dense(10, activation='softmax'))
 
@@ -62,19 +59,20 @@ if __name__ == "__main__":
     # Check pointer for storing best model
     checkpointer = ModelCheckpoint(filepath='model.weights.best.hdf5', verbose=1,
                                    save_best_only=True)
-    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=3, verbose=1, mode='auto')
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
 
+    reduce_lr = ReduceLROnPlateau(patience=1, verbose=1, factor=0.8, epsilon=0)
     # keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=0, mode='auto', epsilon=0.0001, cooldown=0, min_lr=0)'
     # keras.callbacks.RemoteMonitor(root='http://localhost:9000', path='/publish/epoch/end/', field='data', headers=None)
     # https://iwatobipen.wordpress.com/2016/11/23/remotemonitor-in-keras/
-    # TODO add reduce LR on plateau. stopped at iter 14. as is or remove filter=64 layer since it didn't improve
+    # TODO changed: factor to .7 epsion to 0 patience to 5 for reduce lr: epochs to 100: early stop patience to 10
     history = model.fit_generator(
         train_generator,
-        epochs=25,
+        epochs=100,
         validation_data=validation_generator,
         steps_per_epoch=len(x_train) // train_batchsize,
         validation_steps=len(x_valid) // valid_batchsize,
-        callbacks=[checkpointer, early_stopping],
+        callbacks=[checkpointer, early_stopping, reduce_lr],
         verbose=1)
 
     # load the weights that yielded the best validation accuracy
